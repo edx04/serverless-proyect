@@ -6,6 +6,7 @@ plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
   - serverless-plugin-tracing
+  - serverless-reqvalidator-plugin
 
 provider:
   name: aws
@@ -31,12 +32,12 @@ provider:
     # Enable API Gateway logs
     restApi: true
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-        - s3:GetObject
-      Resource: "arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*"  
+  # iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #       - s3:PutObject
+  #       - s3:GetObject
+  #     Resource: "arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*"  
 
 
 
@@ -91,9 +92,11 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+          reqValidatorName: RequestBodyValidator
           request:
             schemas:
               application/json: ${file(models/create-todo-model.json)}
+          
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -223,7 +226,7 @@ resources:
         RestApiId: 
           Ref: ApiGatewayRestApi
         ValidateRequestBody: true
-        ValidateRequestParameters: true
+        ValidateRequestParameters: false
 
 
     GatewayResponseDefault4XX:
